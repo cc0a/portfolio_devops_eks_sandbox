@@ -1,0 +1,116 @@
+
+# ==========================================
+# Terraform
+# ==========================================
+
+# Terraform working directory
+**/.terraform/*
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform plans
+*.tfplan
+tfplan
+plan.out
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# Variable files (may contain secrets)
+*.tfvars
+*.tfvars.json
+!example.tfvars
+!*.example.tfvars
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform CLI configuration
+.terraformrc
+terraform.rc
+
+# ==========================================
+# AWS credentials and configuration
+# ==========================================
+
+.aws/
+**/.aws/
+credentials
+config
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# ==========================================
+# Kubernetes
+# ==========================================
+
+# Local kubeconfig files
+kubeconfig
+kubeconfig.*
+.kube/
+
+# Local Kubernetes secrets/configuration
+secrets.yaml
+secrets.yml
+
+# ==========================================
+# Python
+# ==========================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Distribution/build artifacts
+build/
+dist/
+*.egg-info/
+
+# Testing and linting
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ==========================================
+# Docker
+# ==========================================
+
+.docker/
+docker-compose.override.yml
+
+# ==========================================
+# IDE and operating system
+# ==========================================
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+.DS_Store
+Thumbs.db
+
+# ==========================================
+# Logs
+# ==========================================
+
+*.log
+logs/

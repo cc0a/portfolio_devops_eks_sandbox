@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-incident-manager
+  namespace: cloud-incident-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloud-incident-manager
+  template:
+    metadata:
+      labels:
+        app: cloud-incident-manager
+    spec:
+      containers:
+        - name: app
+          image: 795734304267.dkr.ecr.us-east-1.amazonaws.com/cloud-incident-manager:v1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
+            - name: DATABASE_URL
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloud-incident-manager
+  namespace: cloud-incident-manager
+spec:
+  type: ClusterIP
+  selector:
+    app: cloud-incident-manager
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

@@ -1,0 +1,9 @@
+
+aws_region         = "us-east-1"
+environment        = "dev"
+cluster_name       = "cloud-incident-manager-eks"
+kubernetes_version = "1.37"
+
+# Replace with your workstation's public IPv4 address.
+# Example: ["203.0.113.25/32"]
+admin_cidrs = ["REPLACE_WITH_YOUR_PUBLIC_IP/32"]

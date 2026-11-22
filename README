@@ -1,0 +1,345 @@
+# Cloud Incident Manager — AWS EKS DevOps & Break-Fix Lab
+
+A hands-on DevOps engineering project demonstrating containerized application development, Infrastructure as Code, AWS infrastructure, Kubernetes orchestration, CI/CD automation, and cloud troubleshooting.
+
+The project deploys a Python-based incident management application to Amazon EKS. GitHub Actions automates code validation, Docker image builds, and publishing container images to Amazon Elastic Container Registry (ECR) using AWS OpenID Connect (OIDC) authentication.
+
+The environment also includes a Python-based automation runner designed to support future infrastructure troubleshooting and break-fix exercises.
+
+---
+
+## Architecture
+
+```text
+                    Developer
+                        |
+                        v
+                  GitHub Repository
+                        |
+                        v
+                  GitHub Actions
+                        |
+              +---------+---------+
+              |                   |
+         Code Validation      Docker Builds
+              |                   |
+              +---------+---------+
+                        |
+                        v
+                 AWS OIDC Federation
+                        |
+                        v
+                  AWS IAM Role
+                        |
+                        v
+                 Amazon ECR
+                  /         \
+                 v           v
+          Application     Automation
+             Image          Image
+                 \           /
+                  \         /
+                   v       v
+                 Amazon EKS
+                      |
+             Kubernetes Namespace
+                      |
+             +--------+--------+
+             |                 |
+             v                 v
+        Python API         PostgreSQL
+        Application        Database
+             |
+             v
+       Kubernetes Service
+```
+
+### Technology Stack
+
+| Category | Technology |
+|---|---|
+| Cloud provider | AWS |
+| Infrastructure as Code | Terraform |
+| Containerization | Docker |
+| Container orchestration | Kubernetes / Amazon EKS |
+| CI/CD | GitHub Actions |
+| Container registry | Amazon ECR |
+| Authentication | GitHub OIDC / AWS IAM |
+| Application | Python |
+| Database | PostgreSQL |
+| Automation | Python / Boto3 |
+| Source control | Git / GitHub |
+
+---
+
+## AWS Infrastructure
+
+The environment is provisioned using Terraform.
+
+Infrastructure components include:
+
+- Amazon VPC
+- Public and private subnets across multiple Availability Zones
+- Internet Gateway
+- NAT Gateway
+- Amazon EKS control plane
+- Managed EC2 worker node group
+- Amazon ECR repositories
+- S3 remote Terraform state storage
+- AWS IAM roles and policies
+
+### EKS Configuration
+
+The Kubernetes environment uses a managed EKS cluster with an EC2 worker node group.
+
+The application runs inside a dedicated Kubernetes namespace:
+
+```text
+cloud-incident-manager
+```
+
+Kubernetes resources include:
+
+- Application Deployment
+- Application ClusterIP Service
+- PostgreSQL Deployment
+- PostgreSQL Service
+- Kubernetes Secrets for database credentials
+
+---
+
+## CI/CD Pipeline
+
+GitHub Actions provides automated validation, container builds, and image publishing.
+
+Workflow:
+
+```text
+Git Push
+   |
+   v
+GitHub Actions Trigger
+   |
+   v
+Install Python Dependencies
+   |
+   v
+Compile Python Source
+   |
+   v
+Build Application Docker Image
+   |
+   v
+Build Automation Runner Image
+   |
+   v
+Authenticate to AWS Using OIDC
+   |
+   v
+Authenticate to Amazon ECR
+   |
+   v
+Push Images to ECR
+```
+
+### Pipeline Capabilities
+
+**1. Source validation**
+
+- Checks out the repository.
+- Installs application and automation dependencies.
+- Compiles Python source files to identify syntax errors.
+
+**2. Container builds**
+
+Builds two separate Docker images:
+
+- `cloud-incident-manager`
+- `cloud-incident-manager-runner`
+
+**3. AWS authentication**
+
+GitHub Actions assumes a dedicated AWS IAM role through OpenID Connect.
+
+This avoids storing long-lived AWS access keys as GitHub secrets.
+
+**4. Image publishing**
+
+Successfully validated Docker images are published to Amazon ECR.
+
+The workflow uses versioned image tags associated with GitHub workflow executions.
+
+---
+
+## Repository Structure
+
+```text
+portfolio_devops_eks_sandbox/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── app/
+│   └── Application source code
+│
+├── automation/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── runner.py
+│
+├── kubernetes/
+│   └── app/
+│       ├── app.yaml
+│       └── postgres.yaml
+│
+├── terraform/
+│   └── eks/
+│       ├── backend.tf
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── providers.tf
+│       ├── variables.tf
+│       ├── versions.tf
+│       └── terraform.tfvars.example
+│
+├── Dockerfile
+├── requirements.txt
+├── github-ecr-publish-policy.json
+└── github-portfolio-trust.json
+```
+
+---
+
+## Deployment and Operations
+
+The application is deployed to Amazon EKS using Kubernetes manifests.
+
+Example commands:
+
+```bash
+# Configure kubectl for the EKS cluster
+aws eks update-kubeconfig \
+  --region us-east-1 \
+  --name cloud-incident-manager-eks
+
+# Check cluster nodes
+kubectl get nodes
+
+# Inspect application resources
+kubectl get all -n cloud-incident-manager
+
+# Inspect application logs
+kubectl logs deployment/cloud-incident-manager \
+  -n cloud-incident-manager
+
+# Inspect Kubernetes events
+kubectl get events \
+  -n cloud-incident-manager \
+  --sort-by=.metadata.creationTimestamp
+```
+
+### Image Management
+
+Application and automation images are stored in Amazon ECR.
+
+To inspect published images:
+
+```bash
+aws ecr list-images \
+  --repository-name cloud-incident-manager \
+  --region us-east-1
+
+aws ecr list-images \
+  --repository-name cloud-incident-manager-runner \
+  --region us-east-1
+```
+
+---
+
+## Break-Fix Lab Objectives
+
+The project is intended to evolve into a practical DevOps troubleshooting environment.
+
+The goal is to simulate infrastructure and application failures that an engineer might encounter in a production cloud environment.
+
+Planned troubleshooting scenarios include:
+
+| Area | Example Failure |
+|---|---|
+| Kubernetes | CrashLoopBackOff |
+| Kubernetes | Failed readiness and liveness probes |
+| Kubernetes | Incorrect image tags |
+| Kubernetes | Missing ConfigMaps or Secrets |
+| Networking | Service connectivity failures |
+| AWS IAM | Incorrect IAM permissions |
+| ECR | Image pull authentication failures |
+| Terraform | State and configuration issues |
+| Docker | Broken image builds |
+| CI/CD | Failed GitHub Actions workflows |
+| Python | Application dependency and runtime failures |
+| Database | PostgreSQL connectivity failures |
+
+### Automation Runner
+
+A separate Python-based automation runner is included in the repository.
+
+The runner uses Boto3 and is designed to support controlled AWS troubleshooting exercises.
+
+The initial implementation is dry-run oriented. Actual infrastructure-changing functionality is not enabled.
+
+Future development will introduce isolated scenarios, diagnostic output, and guided troubleshooting exercises.
+
+---
+
+## Project Goals
+
+This project demonstrates practical experience with:
+
+- Building and containerizing Python applications.
+- Provisioning AWS infrastructure with Terraform.
+- Operating workloads on Amazon EKS.
+- Building CI pipelines with GitHub Actions.
+- Implementing secure GitHub-to-AWS authentication using OIDC.
+- Publishing container images to Amazon ECR.
+- Troubleshooting Kubernetes workloads and AWS infrastructure.
+- Developing Python automation for cloud operations.
+
+The longer-term objective is to create a reusable DevOps break-fix sandbox that simulates real-world infrastructure incidents and provides a practical environment for diagnosing and resolving them.
+
+---
+
+## Security Considerations
+
+- AWS authentication from GitHub Actions uses OIDC rather than static AWS credentials.
+- IAM permissions are assigned through dedicated roles and policies.
+- Database credentials are supplied through Kubernetes Secrets.
+- Terraform state is stored remotely in an encrypted S3 backend.
+- Infrastructure-changing automation remains disabled in the initial runner implementation.
+
+This environment is intended for learning and demonstration, not production deployment.
+
+---
+
+## Project Status
+
+| Component | Status |
+|---|---|
+| Terraform infrastructure | Implemented |
+| Amazon EKS cluster | Deployed |
+| Python application | Deployed and verified |
+| PostgreSQL integration | Deployed |
+| Docker containerization | Implemented |
+| GitHub Actions validation | Working |
+| AWS OIDC authentication | Working |
+| ECR image publishing | Working |
+| Kubernetes deployment | Verified |
+| Automated Kubernetes deployment | Future enhancement |
+| Break-fix scenarios | In development |
+
+---
+
+**Project:** Cloud Incident Manager  
+**Repository:** [cc0a/portfolio_devops_eks_sandbox](https://github.com/cc0a/portfolio_devops_eks_sandbox)  
+**Cloud Provider:** Amazon Web Services  
+**Primary Region:** us-east-1

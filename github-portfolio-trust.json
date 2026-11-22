@@ -4,13 +4,13 @@
     {
       "Effect": "Allow",
       "Principal": {
-        "Federated": "arn:aws:iam::<your-account-number>:oidc-provider/token.actions.githubusercontent.com"
+        "Federated": "arn:aws:iam::795734304267:oidc-provider/token.actions.githubusercontent.com"
       },
       "Action": "sts:AssumeRoleWithWebIdentity",
       "Condition": {
         "StringEquals": {
           "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-          "token.actions.githubusercontent.com:sub": "repo:cc0a/portfolio_devops_eks_sandbox:ref:refs/heads/main"
+          "token.actions.githubusercontent.com:sub": "repo:cc0a@29751781/portfolio_devops_eks_sandbox@1466997935:ref:refs/heads/main"
         }
       }
     }

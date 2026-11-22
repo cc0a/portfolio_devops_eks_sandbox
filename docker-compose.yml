@@ -1,0 +1,23 @@
+
+services:
+  breakfix:
+    build:
+      context: ./automation
+      dockerfile: Dockerfile
+    image: cloud-incident-manager-runner:latest
+    container_name: cloud-incident-manager
+
+    stdin_open: true
+    tty: true
+
+    environment:
+      AWS_PROFILE: ${AWS_PROFILE:-default}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION:-us-east-1}
+      BREAKFIX_BACKUP_DIR: /runner/.breakfix-backups
+
+    volumes:
+      - ${HOME}/.aws:/root/.aws:ro
+      - ${HOME}/.kube:/root/.kube:ro
+      - ./automation/.breakfix-backups:/runner/.breakfix-backups
+
+    restart: "no"
